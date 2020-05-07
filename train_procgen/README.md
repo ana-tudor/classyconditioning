@@ -30,15 +30,15 @@ python -m train_procgen.train2 --timesteps_total 20000 --save_interval 1 --run_d
   - Trains on --num_levels 50 as default
   - Save every 1 interval
   - Logs at the same interval
-python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "This_Model_1"
+python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "train_procgen/models/This_Model_1"
 * If training pauses, if necessary, resume training:
   - Changed name to not override previous checkpoints
   - Might want to decrease timesteps_total based on how much progress was made previously
   - Note the number of the last checkpoint saved by previous run
-python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "This_Model_1_1" --load_path /train_procgen/This_Model_1_1/checkpoints/00009
+python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "train_procgen/models/This_Model_1_1" --load_path /train_procgen/This_Model_1_1/checkpoints/00009
 * Test on new, unseen levels
   - Not sure what timesteps_total needs to be. Random testing suggests, something between 100 and 20000...
   - Note checkpoint.
-  - Might need to do this in a loop, multiple times for each model checkpoint to get change over time. Will be kind of annoying to post process unfortunately. Possibly there is a way to do it in a loop of a train2.py type of file (ie test.py) that sets some of these default values, and then can use the same logger to iterate through each checkpoint and compile a single csv. Worth investigating. 
+  - Might need to do this in a loop, multiple times for each model checkpoint to get change over time. Will be kind of annoying to post process unfortunately. Possibly there is a way to do it in a loop of a train2.py type of file (ie test.py) that sets some of these default values, and then can use the same logger to iterate through each checkpoint and compile a single csv. Worth investigating.
   - -- start_level 50 so that there is no overlap of levels. Need to change this if trained OG model on more levels.
-python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "This_Model_1_Test" --load_path /train_procgen/This_Model_1_1/checkpoints/00100 --start_level 50
+python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "train_procgen/models/This_Model_1_Test" --load_path /train_procgen/This_Model_1_1/checkpoints/00100 --start_level 50
