@@ -7,7 +7,6 @@ from matplotlib import pyplot as plt
 env = gym.make("procgen:procgen-fruitbot-v0")
 obs = env.reset()
 plt.ion()
-plt.show()
 while True:
     obs, reward, done, info = env.step(env.action_space.sample())
     if done:
