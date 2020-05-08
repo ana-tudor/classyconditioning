@@ -3,3 +3,6 @@ __pycache__/
 .generated/
 *.egg-info/
 saved_models/
+train_procgen/models
+*.ipynb_checkpoints
+baselines/
