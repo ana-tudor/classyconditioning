@@ -42,3 +42,14 @@ python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --ru
   - Might need to do this in a loop, multiple times for each model checkpoint to get change over time. Will be kind of annoying to post process unfortunately. Possibly there is a way to do it in a loop of a train2.py type of file (ie test.py) that sets some of these default values, and then can use the same logger to iterate through each checkpoint and compile a single csv. Worth investigating.
   - -- start_level 50 so that there is no overlap of levels. Need to change this if trained OG model on more levels.
 python -m train_procgen.train2 --timesteps_total 50000000 --save_interval 1 --run_dir "train_procgen/models/This_Model_1_Test" --load_path /train_procgen/This_Model_1_1/checkpoints/00100 --start_level 50
+
+## Environment Setup
+Create environment from Saved file:
+conda env create -f proj3_env.yml
+Update environment from Saved file:
+conda env update --name train-procgen --file train-procgen/environment.yml
+conda env update --name train-procgen --file train-procgen/environment2.yml
+
+Update environment file
+<!-- source activate proj3_env.yml -->
+conda env export > environment2.yml
