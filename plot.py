@@ -70,7 +70,7 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
     if xkcd:
         plt.xkcd()
     for model_name in model_names:
-        dataset = pd.read_csv(model_name + "/progress.csv")
+        dataset = pd.read_csv("models/" + model_name + "/progress.csv")
         # get all headers in csv (as strings)
 
         # get the labels. Column 0 is mean, Column 1 is Reward, Column -1 is times
@@ -83,7 +83,6 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
                 longest_X = X
 
     if single_plot:
-        print('here')
         for col in cols:
             for model_name in model_names:
                 y = ys[(model_name, col)]
