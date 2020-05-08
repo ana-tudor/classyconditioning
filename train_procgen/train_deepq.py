@@ -87,7 +87,7 @@ def main():
     if save_interval == 0:
         checkpoint_freq = None
     else: 
-        checkpoint_freq = 
+        checkpoint_freq = save_interval
 
     conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     print("num_levels", num_levels)
