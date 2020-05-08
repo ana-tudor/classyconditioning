@@ -1,5 +1,5 @@
 import tensorflow as tf
-from baselines.deepq import deepq
+from train_procgen.deepq import deepq
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
