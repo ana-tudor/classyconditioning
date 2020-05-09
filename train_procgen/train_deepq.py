@@ -1,5 +1,5 @@
 import tensorflow as tf
-from train_procgen.deepq import deepq
+import deepq
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
@@ -17,7 +17,7 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 64
+    num_envs = 1
     learning_rate = 5e-4
     ent_coef = .01
     gamma = .999
@@ -64,6 +64,7 @@ def main():
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=args.env_name, num_levels=num_levels, start_level=args.start_level, distribution_mode=args.distribution_mode)
+    
     venv = VecExtractDictObs(venv, "rgb")
 
     venv = VecMonitor(
@@ -103,10 +104,10 @@ def main():
         exploration_final_eps=0.02,
         train_freq=train_freq,
         batch_size=32,
-        print_freq=1000,
+        print_freq=10,
         checkpoint_freq=checkpoint_freq,
         checkpoint_path=None,
-        learning_starts=1000,
+        learning_starts=10,
         gamma=1.0,
         target_network_update_freq=500,
         prioritized_replay=False,
