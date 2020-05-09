@@ -3,6 +3,7 @@ from baselines.acktr import acktr
 from baselines.common.models import nature_cnn
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
+from stable_baselines.common.policies import CnnLnLstmPolicy, MlpLnLstmPolicy, MlpPolicy
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
     VecExtractDictObs,
