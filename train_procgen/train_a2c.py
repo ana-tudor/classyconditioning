@@ -1,6 +1,6 @@
 import tensorflow as tf
-import deepq
-from baselines.common.models import build_impala_cnn
+from baselines.a2c import a2c
+from baselines.common.models import nature_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
@@ -17,12 +17,12 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 1
+    num_envs = 8
     learning_rate = 5e-4
     ent_coef = .01
     gamma = .999
     lam = .95
-    nsteps = 256
+    nsteps = 5
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
@@ -64,7 +64,6 @@ def main():
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=args.env_name, num_levels=num_levels, start_level=args.start_level, distribution_mode=args.distribution_mode)
-    
     venv = VecExtractDictObs(venv, "rgb")
 
     venv = VecMonitor(
@@ -72,8 +71,6 @@ def main():
     )
 
     venv = VecNormalize(venv=venv, ob=False)
-    for env in venv:
-        print(env)
 
     logger.info("creating tf session")
     setup_mpi_gpus()
@@ -82,44 +79,25 @@ def main():
     sess = tf.Session(config=config)
     sess.__enter__()
 
-    if is_test_worker:
-        train_freq = timesteps_per_proc + 1
-    else:
-        train_freq = 1
-
-    if save_interval == 0:
-        checkpoint_freq = None
-    else: 
-        checkpoint_freq = save_interval
-
-    conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+    conv_fn = lambda x: nature_cnn(x)
     print("num_levels", num_levels)
     logger.info("training")
-    deepq.learn(
-        env = venv,
-        network = conv_fn,
+    a2c.learn(
+        network=conv_fn,
+        env=venv,
         seed=None,
-        lr=5e-4,
+        nsteps=nsteps,
         total_timesteps=timesteps_per_proc,
-        buffer_size=50000,
-        exploration_fraction=0.1,
-        exploration_final_eps=0.02,
-        train_freq=train_freq,
-        batch_size=32,
-        print_freq=10,
-        checkpoint_freq=checkpoint_freq,
-        checkpoint_path=None,
-        learning_starts=10,
-        gamma=1.0,
-        target_network_update_freq=500,
-        prioritized_replay=False,
-        prioritized_replay_alpha=0.6,
-        prioritized_replay_beta0=0.4,
-        prioritized_replay_beta_iters=None,
-        prioritized_replay_eps=1e-6,
-        param_noise=False,
-        callback=None,
-        load_path=load_path
+        vf_coef=0.5,
+        ent_coef=0.01,
+        max_grad_norm=0.5,
+        lr=7e-4,
+        lrschedule='linear',
+        epsilon=1e-5,
+        alpha=0.99,
+        gamma=0.99,
+        log_interval=400,
+        load_path=None
     )
 
 if __name__ == '__main__':
