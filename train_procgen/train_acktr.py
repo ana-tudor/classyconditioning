@@ -1,5 +1,7 @@
 import tensorflow as tf
+import gym
 from baselines.acktr import acktr
+from baselines.common.cmd_util import make_vec_env
 from baselines.common.models import nature_cnn
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
@@ -70,7 +72,7 @@ def main():
 
     logger.info("creating tf session")
     setup_mpi_gpus()
-    config = tf.ConfigProto()
+    config = tf.ConfigProto() #device_count = {'GPU':0})
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     sess = tf.Session(config=config)
     sess.__enter__()
@@ -80,6 +82,8 @@ def main():
 
     print("num_levels", num_levels)
     logger.info("training")
+
+    #venv = make_vec_env("BreakoutNoFrameskip-v4", 'atari', 2, seed=10)
 
     acktr.learn(
         network=network,
