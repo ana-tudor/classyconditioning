@@ -18,7 +18,10 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 32
+    num_envs = 16
+    gamma = 0.999
+    nsteps = 20
+    lr = 1.0e-3
 
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
     parser.add_argument('--env_name', type=str, default='fruitbot')
@@ -85,6 +88,9 @@ def main():
         network=network,
         env=venv,
         seed=seed,
+        nsteps=nsteps,
+        gamma=gamma,
+        lr=lr,
         total_timesteps = timesteps_per_proc,
         log_interval=log_interval,
         save_interval=save_interval,
