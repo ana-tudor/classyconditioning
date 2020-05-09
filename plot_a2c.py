@@ -72,7 +72,7 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
 
         # get the labels. Column 0 is mean, Column 1 is Reward, Column -1 is times
         for col in cols:
-            X = np.array(dataset[values[-1]], dtype='float32')
+            X = np.array(dataset[values[-2]], dtype='float32')
             y = np.array(dataset[col], dtype='float32')
             xs[(model_name, col)] = X
             ys[(model_name, col)] = y
