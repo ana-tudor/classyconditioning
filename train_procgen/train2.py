@@ -1,4 +1,4 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from baselines.ppo2 import ppo2
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
@@ -15,6 +15,7 @@ import argparse
 
 # LOG_DIR = '/tmp/procgen'
 LOG_DIR = './train_procgen/models/'
+tf.disable_v2_behavior()
 
 def main():
     num_envs = 64
