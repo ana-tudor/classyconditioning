@@ -1,9 +1,8 @@
 import tensorflow as tf
-from baselines.acktr import acktr
+from baselines.acer import acer
 from baselines.common.models import nature_cnn
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
-from baselines.common.cmd_util import make atari_env
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
     VecExtractDictObs,
@@ -19,7 +18,7 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 1
+    num_envs = 32
 
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
     parser.add_argument('--env_name', type=str, default='fruitbot')
@@ -28,7 +27,7 @@ def main():
     parser.add_argument('--start_level', type=int, default=0)
 
     parser.add_argument('--timesteps_total', type=int, default=50_000_000)
-    parser.add_argument('--seed', type=int, default=10)
+    parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--save_interval', type=int, default=None)
     parser.add_argument('--log_interval', type=int, default=1)
     parser.add_argument('--load_path', type=str, default=None)
@@ -79,10 +78,10 @@ def main():
     # conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     network = nature_cnn#'cnn'
 
-    print("num_levels", num_levels)
+    # print("num_levels", num_levels)
     logger.info("training")
 
-    acktr.learn(
+    acer.learn(
         network=network,
         env=venv,
         seed=seed,
