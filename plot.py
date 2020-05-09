@@ -19,15 +19,28 @@ import os
 # python plot.py --model_names This_Model_1 This_Model_2 --columns 1 0 --single_plot True --save True --show False
 # python plot.py --model_names This_Model_1 --columns 1 --save True --show False
 
+# Okay, the API is different now when plotting DIFFERENT models on the same plot. This is due to weird csv stuff that I didn't resolve neatly
+# All previous functionality is maintained.
+# When diff_models = True, the following has changed:
+# You can only plot one column at a time (single plot T/F still works though)
+# The --columns parameter now gives the y-axis column index for the respective model. For example model1 has reward in column2, model2 has reward in column3, use --columns 2 3
+# The --time_columns parameter is the same idea for the time column x-axis. You can use -1, -2, etc. here if easier.
+# Example: Plot episode_length_mean for three models in single plot and save to each model folder. Respective column indices listed
+# python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 13 0 0 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
+# Example: Plot episode_reward_mean for three models in single plot and save to each model folder. Respective column indices listed
+# python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 14 1 1 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
+
 def main():
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
     parser.add_argument('--save', type=bool, default=False)
     parser.add_argument('--xkcd', type=bool, default=False)
     parser.add_argument('--single_plot', type=bool, default=False)
     parser.add_argument('--show', type=bool, default=True)
-    parser.add_argument('--save_dir', type=str, default="./")
+    parser.add_argument('--diff_models', type=bool, default=False)
+    parser.add_argument('--save_dir', type=str, default="./plotting/")
     parser.add_argument('--model_names', nargs='*', required=True)
     parser.add_argument('--columns', nargs='*')
+    parser.add_argument('--time_columns', nargs='*')
 
     args = parser.parse_args()
     columns = args.columns if args.columns else ['reward'] # default reward
@@ -36,18 +49,25 @@ def main():
             columns[index] = int(columns[index]) # convert column indices to ints
         except ValueError:
             pass
+    time_columns = args.time_columns if args.time_columns else [-1] # default last column
+    for index in range(len(time_columns)):
+        try:
+            time_columns[index] = int(time_columns[index]) # convert time_columns indices to ints
+        except ValueError:
+            pass
     save_dir = args.save_dir
     save = args.save or args.save_dir != "" # auto-set to true if save_dir is set
     show = args.show
     xkcd = args.xkcd
+    diff_models = args.diff_models
     model_names = args.model_names
     single_plot = args.single_plot
-    print(single_plot)
+    if diff_models:
+        plot_diff_models(model_names, columns=columns, save=save, show=show, save_dir=save_dir, xkcd=xkcd, single_plot=single_plot, time_columns=time_columns)
+    elif not diff_models:
+        plot(model_names, columns=columns, save=save, show=show, save_dir=save_dir, xkcd=xkcd, single_plot=single_plot)
 
-    plot(model_names, columns=columns, save=save, show=show, save_dir=save_dir, xkcd=xkcd, single_plot=single_plot)
-
-def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", xkcd=False, single_plot=False):
-    longest_X = np.array([])
+def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./plotting/", xkcd=False, single_plot=False):
     ys = {}
     xs = {}
     cols = []
@@ -63,16 +83,16 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
             col = values[0]
         elif column == "reward":
             col = values[1]
+        elif column not in values:
+            raise Exception('invalid column!')
         else:
             col = column
         cols.append(col)
+
     if xkcd:
         plt.xkcd()
     for model_name in model_names:
         dataset = pd.read_csv("models/" + model_name + "/progress.csv")
-
-        if column not in dataset.columns.values:
-            raise Exception('invalid column!')
 
         # get all headers in csv (as strings)
 
@@ -82,18 +102,13 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
             y = np.array(dataset[col], dtype='float32')
             xs[(model_name, col)] = X
             ys[(model_name, col)] = y
-            if len(X) > len(longest_X):
-                longest_X = X
 
     if single_plot:
         for col in cols:
             for model_name in model_names:
                 y = ys[(model_name, col)]
-                padded_y = np.ones(len(longest_X)) * np.min(y)
-                print(y)
-                padded_y[:len(y)] = y
-                print(padded_y)
-                plt.plot(longest_X, padded_y, label=model_name)
+                x = xs[(model_name, col)]
+                plt.plot(x, y, label=model_name)
 
             plt.legend(loc='best')
             plt.ylabel(col)
@@ -119,6 +134,74 @@ def plot(model_names, columns=['mean'], save=False, show=True, save_dir = "./", 
                 plt.plot(X, y)
                 if save:
                     file_name = model_name + "_" + str(column)
+                    directory = save_dir + model_name + "/plots/"
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
+                    plt.savefig(directory + file_name + ".png")
+                if show:
+                    plt.show()
+
+def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir = "./plotting/", xkcd=False, single_plot=False, time_columns=[-1]):
+    ys = {}
+    xs = {}
+    col_names = set()
+    assert len(model_names) == len(time_columns), "NOT len(model_names) == len(time_columns)"
+
+    for column in columns:
+        assert isinstance(column, int), "NOT isinstance(column, int)"
+    cols = columns
+
+    if xkcd:
+        plt.xkcd()
+    for index in range(len(model_names)):
+        model_name = model_names[index]
+        time_column = time_columns[index]
+        dataset = pd.read_csv("models/" + model_name + "/progress.csv")
+
+        # get all headers in csv (as strings)
+
+        # get the labels. Column 0 is mean, Column 1 is Reward, Column -1 is times for PPO
+        # for col in cols:
+        col = columns[index]
+        X = np.array(dataset[dataset.columns.values[time_column]], dtype='float32')
+        y = np.array(dataset[dataset.columns.values[col]], dtype='float32')
+        xs[model_name] = X
+        ys[model_name] = y
+        col_names.add(dataset.columns.values[col])
+
+    if single_plot:
+        for model_name in model_names:
+            y = ys[model_name]
+            x = xs[model_name]
+            plt.plot(x, y, label=model_name)
+
+        plt.legend(loc='best')
+        plt.ylabel("Columns " + str(col_names))
+        plt.xlabel("Training Iterations")
+        title = str(model_names) + ": Columns " + str(col_names) + " vs. Training Iterations"
+        plt.title(title)
+        if save:
+            file_name = title
+            for model_name in model_names:
+                directory = save_dir + model_name + "/plots/"
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                plt.savefig(directory + file_name + ".png")
+        if show:
+            plt.show()
+
+    if not single_plot:
+        for model_name in model_names:
+            for col_name in col_names:
+                X = xs[model_name]
+                y = ys[model_name]
+                plt.ylabel("Column " + col_name)
+                plt.xlabel("Training Iterations")
+                title = model_name + ": " + col_name + " vs. Training Iterations"
+                plt.title(title)
+                plt.plot(X, y)
+                if save:
+                    file_name = title
                     directory = save_dir + model_name + "/plots/"
                     if not os.path.exists(directory):
                         os.makedirs(directory)
