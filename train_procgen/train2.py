@@ -108,5 +108,5 @@ def main():
     )
 
 if __name__ == '__main__':
-    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    tf.logging.set_verbosity(tf.logging.ERROR)
     main()
