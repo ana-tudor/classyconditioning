@@ -178,7 +178,11 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
         plt.legend(loc='best')
         plt.ylabel("Columns " + str(col_names))
         plt.xlabel("Training Iterations")
-        title = str(model_names) + ": Columns " + str(col_names) + " vs. Training Iterations"
+        title = ""
+        for model_name in model_names:
+            title += model_name + "_"
+        title += list(col_names)[0]
+        title += "_vs_TrainingIterations"
         plt.title(title)
         if save:
             file_name = title
@@ -197,7 +201,7 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
                 y = ys[model_name]
                 plt.ylabel("Column " + col_name)
                 plt.xlabel("Training Iterations")
-                title = model_name + ": " + col_name + " vs. Training Iterations"
+                title = model_name + "_" + col_name + "_vs_TrainingIterations"
                 plt.title(title)
                 plt.plot(X, y)
                 if save:
