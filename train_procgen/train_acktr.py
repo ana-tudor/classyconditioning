@@ -5,6 +5,7 @@ from baselines.common.cmd_util import make_vec_env
 from baselines.common.models import nature_cnn
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
+from stable_baselines.common.policies import CnnLnLstmPolicy, MlpLnLstmPolicy, MlpPolicy
 from baselines.common.cmd_util import make atari_env
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
