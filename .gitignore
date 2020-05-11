@@ -6,3 +6,4 @@ saved_models/
 train_procgen/models
 *.ipynb_checkpoints
 baselines/
+dist/

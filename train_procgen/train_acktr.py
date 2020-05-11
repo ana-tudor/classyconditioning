@@ -5,6 +5,8 @@ from baselines.common.cmd_util import make_vec_env
 from baselines.common.models import nature_cnn
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
+from stable_baselines.common.policies import CnnLnLstmPolicy, MlpLnLstmPolicy, MlpPolicy
+from baselines.common.cmd_util import make atari_env
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
     VecExtractDictObs,
@@ -20,7 +22,7 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 64
+    num_envs = 1
 
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
     parser.add_argument('--env_name', type=str, default='fruitbot')

@@ -1,5 +1,6 @@
-import tensorflow as tf
-from baselines.ppo2 import ppo2
+import tensorflow.compat.v1 as tf
+# from baselines.ppo2 import ppo2
+import ppo2_modified
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
@@ -15,6 +16,7 @@ import argparse
 
 # LOG_DIR = '/tmp/procgen'
 LOG_DIR = './train_procgen/models/'
+tf.disable_v2_behavior()
 
 def main():
     num_envs = 64
@@ -38,6 +40,7 @@ def main():
     parser.add_argument('--save_interval', type=int, default=0)
     parser.add_argument('--load_path', type=str, default=None)
     parser.add_argument('--run_dir', type=str, default=LOG_DIR+"default")
+    parser.add_argument('--test_mode', type=bool, default=False)
 
     args = parser.parse_args()
 
@@ -46,6 +49,7 @@ def main():
     save_interval = args.save_interval
     load_path = args.load_path
     run_dir = args.run_dir
+    test_mode = args.test_mode
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -82,10 +86,11 @@ def main():
     conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     print("num_levels", num_levels)
     logger.info("training")
-    ppo2.learn(
+    ppo2_modified.learn(
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
+        test_mode=test_mode,
         save_interval=save_interval,
         nsteps=nsteps,
         nminibatches=nminibatches,
@@ -107,5 +112,5 @@ def main():
     )
 
 if __name__ == '__main__':
-    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    tf.logging.set_verbosity(tf.logging.ERROR)
     main()

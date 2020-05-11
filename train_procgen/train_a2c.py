@@ -17,7 +17,7 @@ import argparse
 LOG_DIR = './train_procgen/models/'
 
 def main():
-    num_envs = 8
+    num_envs = 16
     learning_rate = 5e-4
     ent_coef = .01
     gamma = .999
