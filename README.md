@@ -32,61 +32,61 @@ pip install -e train-procgen
 Train an agent using PPO on the environment StarPilot:
 
 ```
-python -m train_procgen.train --env_name starpilot
+python -m run_agent --env_name starpilot
 ```
 
 Train an agent using PPO on the environment StarPilot using the easy difficulty:
 
 ```
-python -m train_procgen.train --env_name starpilot --distribution_mode easy
+python -m run_agent --env_name starpilot --distribution_mode easy
 ```
 
 Run parallel training using MPI:
 
 ```
-mpiexec -np 8 python -m train_procgen.train --env_name starpilot
+mpiexec -np 8 python -m run_agent --env_name starpilot
 ```
 
 Train an agent on a fixed set of N levels:
 
 ```
-python -m train_procgen.train --env_name starpilot --num_levels N
+python -m run_agent --env_name starpilot --num_levels N
 ```
 
 Train an agent on the same 500 levels used in the paper:
 
 ```
-python -m train_procgen.train --env_name starpilot --num_levels 500
+python -m run_agent --env_name starpilot --num_levels 500
 ```
 
 Train an agent on a different set of 500 levels:
 
 ```
-python -m train_procgen.train --env_name starpilot --num_levels 500 --start_level 1000
+python -m run_agent --env_name starpilot --num_levels 500 --start_level 1000
 ```
 
 Run simultaneous training and testing using MPI. 1 in every 4 workers will be test workers, and the rest will be training workers.
 
 ```
-mpiexec -np 8 python -m train_procgen.train --env_name starpilot --num_levels 500 --test_worker_interval 4
+mpiexec -np 8 python -m run_agent --env_name starpilot --num_levels 500 --test_worker_interval 4
 ```
 
 Train an agent using PPO on a level in Jumper that requires hard exploration
 
 ```
-python -m train_procgen.train --env_name jumper --distribution_mode exploration
+python -m run_agent --env_name jumper --distribution_mode exploration
 ```
 
 Train an agent using PPO on a variant of CaveFlyer that requires memory
 
 ```
-python -m train_procgen.train --env_name caveflyer --distribution_mode memory
+python -m run_agent --env_name caveflyer --distribution_mode memory
 ```
 
 View training options:
 
 ```
-python -m train_procgen.train --help
+python -m run_agent --help
 ```
 
 # Citation
