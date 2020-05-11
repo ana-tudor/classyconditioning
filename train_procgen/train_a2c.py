@@ -22,7 +22,7 @@ def main():
     ent_coef = .01
     gamma = .999
     lam = .95
-    nsteps = 5
+    nsteps = 16
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
@@ -91,12 +91,12 @@ def main():
         vf_coef=0.5,
         ent_coef=0.01,
         max_grad_norm=0.5,
-        lr=7e-4,
+        lr=1e-3,
         lrschedule='linear',
         epsilon=1e-5,
         alpha=0.99,
-        gamma=0.99,
-        log_interval=400,
+        gamma=0.999,
+        log_interval=150,
         load_path=None
     )
 
