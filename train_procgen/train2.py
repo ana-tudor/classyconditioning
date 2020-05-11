@@ -50,11 +50,12 @@ def main():
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    print(rank)
+    # print(rank)
+    # print("comm size", comm.Get_size())
     is_test_worker = False
 
     if test_worker_interval > 0:
-        is_test_worker = comm.Get_rank() % test_worker_interval == (test_worker_interval - 1)
+            is_test_worker = comm.Get_rank() % test_worker_interval == (test_worker_interval - 1)
     print("is_test_worker", is_test_worker)
     mpi_rank_weight = 0 if is_test_worker else 1
     num_levels = 0 if is_test_worker else args.num_levels
