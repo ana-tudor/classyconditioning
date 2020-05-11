@@ -1,6 +1,6 @@
 import tensorflow.compat.v1 as tf
-# from baselines.ppo2 import ppo2
-import ppo2_modified
+from baselines.ppo2 import ppo2
+# import ..ppo2_modified.ppo2_modified
 from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
@@ -87,11 +87,10 @@ def main():
     conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     print("num_levels", num_levels)
     logger.info("training")
-    ppo2_modified.learn(
+    ppo2.learn(
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
-        test_mode=test_mode,
         save_interval=save_interval,
         nsteps=nsteps,
         nminibatches=nminibatches,
