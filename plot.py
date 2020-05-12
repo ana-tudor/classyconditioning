@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import types
 
 # Function is callable from command line or from another file
 # Model_names is the only required command line argument. List as many models as you want
@@ -31,7 +32,7 @@ import os
 # python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 14 1 1 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
 
 # new parameters. Save_name and plot_name. WARNING: These will be the name for EVERY file/plot generated for this run. Will overwrite. Only use for one plot at a time.
-# If save_name or plot_name is not None, it will become the file_name or title for every plot in the run. 
+# If save_name or plot_name is not None, it will become the file_name or title for every plot in the run.
 
 def main():
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
@@ -45,7 +46,7 @@ def main():
     parser.add_argument('--columns', nargs='*')
     parser.add_argument('--time_columns', nargs='*')
     parser.add_argument('--save_name', type=str, default=None)
-    parser.add_argument('--plot_name', type=str, default=None)
+    parser.add_argument('--plot_name', type=str, nargs='*', default=None)
 
     args = parser.parse_args()
     columns = args.columns if args.columns else ['reward'] # default reward
@@ -149,6 +150,9 @@ def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./p
                 plt.ylabel(col)
                 plt.xlabel("Training Iterations")
                 if plot_name:
+                    if len(plot_name) > 1 and not isinstance(plot_name, str):
+                        print("run")
+                        plot_name = ' '.join(plot_name)
                     plt.title(plot_name)
                 else:
                     title = model_name + ": " + col + " vs. Training Iterations"
@@ -210,6 +214,9 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
         title += list(col_names)[0]
         title += "_vs_TrainingIterations"
         if plot_name:
+            if len(plot_name) > 1 and not isinstance(plot_name,str):
+                print("run")
+                plot_name = ' '.join(plot_name)
             plt.title(plot_name)
         else:
             plt.title(title)
