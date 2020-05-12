@@ -11,6 +11,7 @@ try:
 except ImportError:
     MPI = None
 from .runner import Runner
+from .epopt_runner import EPOptRunner
 
 def constfn(val):
     def f(_):
@@ -19,7 +20,8 @@ def constfn(val):
 
 def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, seed=None, nsteps=2048, ent_coef=0.0, lr=3e-4,
             vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
-            log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2,
+            log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2, 
+            paths = 10, epopt_timestep = 0,
             save_interval=0, load_path=None, model_fn=None, update_fn=None, init_fn=None, mpi_rank_weight=1, comm=None, rew_scale=1, **network_kwargs):
     '''
     Learn policy using PPO algorithm (https://arxiv.org/abs/1707.06347)
@@ -89,6 +91,9 @@ def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, 
         model.load(load_path)
     # Instantiate the runner object
     runner = Runner(env=env, model=model, nsteps=nsteps, gamma=gamma, lam=lam, rew_scale=rew_scale)
+    if epopt_timestep > 0:
+        epoptrunner = EPOptRunner(env=env, model=model, nsteps=nsteps, gamma=gamma, lam=lam, rew_scale=rew_scale)
+
     if eval_env is not None:
         eval_runner = Runner(env = eval_env, model = model, nsteps = nsteps, gamma = gamma, lam= lam, rew_scale=rew_scale)
 
@@ -103,6 +108,7 @@ def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, 
     tfirststart = time.perf_counter()
 
     nupdates = total_timesteps//nbatch
+    epopt_update = epopt_timestep//nbatch
     for update in range(1, nupdates+1):
         assert nbatch % nminibatches == 0
         # Start timer
@@ -117,6 +123,10 @@ def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, 
 
         # Get minibatch
         obs, returns, masks, actions, values, neglogpacs, states, epinfos = runner.run() #pylint: disable=E0632
+
+        if update >= epopt_update and (epopt_timestep > 0):
+            obs, returns, masks, actions, values, neglogpacs, states, epinfos = epoptrunner.run(paths = paths)
+
         if eval_env is not None:
             eval_obs, eval_returns, eval_masks, eval_actions, eval_values, eval_neglogpacs, eval_states, eval_epinfos = eval_runner.run() #pylint: disable=E0632
 
@@ -159,7 +169,7 @@ def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, 
 
             # Feedforward --> get losses --> update
             lossvals = np.mean(mblossvals, axis=0)
-            print("training")
+            # print("training")
 
         # End timer
         tnow = time.perf_counter()

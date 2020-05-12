@@ -27,8 +27,8 @@ def main():
     ent_coef = .01
     gamma = .999
     lam = .95
-    nsteps = 8
-    nminibatches = 8
+    nsteps = 50
+    nminibatches = 10
     ppo_epochs = 3
     clip_range = .2
     use_vf_clipping = True
@@ -112,7 +112,7 @@ def main():
         vf_coef=0.5,
         max_grad_norm=0.5,
         load_path=load_path,
-        paths=5, epsilon=1.0
+        paths=10, epsilon=1.0
     )
 
 if __name__ == '__main__':

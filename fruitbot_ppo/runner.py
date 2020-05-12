@@ -22,6 +22,7 @@ class Runner(AbstractEnvRunner):
         mb_obs, mb_rewards, mb_actions, mb_values, mb_dones, mb_neglogpacs = [],[],[],[],[],[]
         mb_states = self.states
         epinfos = []
+        # print(self.dones)
         # For n in range number of steps
         for _ in range(self.nsteps):
             # Given observations, get action value and neglopacs
@@ -33,23 +34,30 @@ class Runner(AbstractEnvRunner):
             mb_neglogpacs.append(neglogpacs)
             mb_dones.append(self.dones)
 
+            # print(len(mb_obs[0]))
+            # print(len(mb_obs))
             # Take actions in env and look the results
             # Infos contains a ton of useful informations
             self.obs[:], rewards, self.dones, infos = self.env.step(actions)
             rewards *= self.rew_scale
+            # print(infos)
             for info in infos:
                 maybeepinfo = info.get('episode')
                 if maybeepinfo: epinfos.append(maybeepinfo)
+            # print(len(epinfos))
             mb_rewards.append(rewards)
         #batch of steps to batch of rollouts
         mb_obs = np.asarray(mb_obs, dtype=self.obs.dtype)
+        # print(mb_obs.shape)
         mb_rewards = np.asarray(mb_rewards, dtype=np.float32)
+        # print(mb_rewards.shape)
         mb_actions = np.asarray(mb_actions)
         mb_values = np.asarray(mb_values, dtype=np.float32)
         mb_neglogpacs = np.asarray(mb_neglogpacs, dtype=np.float32)
         mb_dones = np.asarray(mb_dones, dtype=np.bool)
         last_values = self.model.value(self.obs, S=self.states, M=self.dones)
 
+        # print(self.dones)
         # discount/bootstrap off value fn
         mb_returns = np.zeros_like(mb_rewards)
         mb_advs = np.zeros_like(mb_rewards)

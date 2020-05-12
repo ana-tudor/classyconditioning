@@ -12,11 +12,11 @@ from baselines.common.vec_env import (
     VecNormalize
 )
 from baselines import logger
-from mpi4py import MPI
+# from mpi4py import MPI
 import argparse
 
 # LOG_DIR = '/tmp/procgen'
-LOG_DIR = '/train_procgen/models/'
+LOG_DIR = 'models/'
 tf.disable_v2_behavior()
 
 
@@ -81,6 +81,10 @@ def main():
         help='Values of interest for hyperparameter searching')
     parser.add_argument('--num_envs', type=int, default=num_envs,
         help='The number of environments across which the agent should be run in parallel')
+    parser.add_argument('--epopt_timestep', type=int, default=0,
+        help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
+    parser.add_argument('--paths', type=int, default=10,
+        help='The number of trajectories to explore in EPO-pt')
 
     args = parser.parse_args()
 
@@ -106,7 +110,7 @@ def main():
         for seed in seeds:
             # with tf.get_default_graph().as_default():
             learn_helper(args, args.variable_oi, valoi,
-                     run_dir=LOG_DIR+args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi)+"_"+str(seed),
+                     run_dir=args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi)+"_"+str(seed),
                      seed=seed, save_once=True)
 
 
@@ -118,21 +122,23 @@ def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=
     timesteps_per_proc = args.timesteps_total
     save_interval = args.save_interval
     num_envs = args.num_envs
+    epopt_timestep = args.epopt_timestep
+    paths = args.paths
     if save_once:
         save_interval = timesteps_per_proc//(nsteps*num_envs)
         print(save_interval)
 
     load_path = args.load_path
     if run_dir is None:
-        run_dir = LOG_DIR+args.run_dir
+        run_dir = args.run_dir
     test_mode = args.test_mode
 
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
+    # comm = MPI.COMM_WORLD
+    # rank = comm.Get_rank()
     num_levels = args.num_levels
 
-    log_comm = comm.Split(0, 0)
-    format_strs = ['csv', 'stdout'] if log_comm.Get_rank() == 0 else []
+    # log_comm = comm.Split(0, 0)
+    format_strs = ['csv', 'stdout'] #if log_comm.Get_rank() == 0 else []
     logger.configure(dir=run_dir, format_strs=format_strs)
 
     logger.info("creating environment")
@@ -174,7 +180,7 @@ def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=
             log_interval=1,
             ent_coef=ent_coef,
             clip_vf=use_vf_clipping,
-            comm=comm,
+            comm=None,
             lr=learning_rate,
             cliprange=clip_range,
             update_fn=None,
@@ -182,6 +188,8 @@ def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=
             vf_coef=0.5,
             max_grad_norm=0.5,
             rew_scale=rew_scale,
+            epopt_timestep=epopt_timestep,
+            paths = paths,
             load_path=load_path
         )
     sess.close()
