@@ -30,6 +30,9 @@ import os
 # Example: Plot episode_reward_mean for three models in single plot and save to each model folder. Respective column indices listed
 # python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 14 1 1 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
 
+# new parameters. Save_name and plot_name. WARNING: These will be the name for EVERY file/plot generated for this run. Will overwrite. Only use for one plot at a time.
+# If save_name or plot_name is not None, it will become the file_name or title for every plot in the run. 
+
 def main():
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
     parser.add_argument('--save', type=bool, default=False)
@@ -41,6 +44,8 @@ def main():
     parser.add_argument('--model_names', nargs='*', required=True)
     parser.add_argument('--columns', nargs='*')
     parser.add_argument('--time_columns', nargs='*')
+    parser.add_argument('--save_name', type=str, default=None)
+    parser.add_argument('--plot_name', type=str, default=None)
 
     args = parser.parse_args()
     columns = args.columns if args.columns else ['reward'] # default reward
@@ -59,15 +64,21 @@ def main():
     save = args.save or args.save_dir != "" # auto-set to true if save_dir is set
     show = args.show
     xkcd = args.xkcd
+    save_name = args.save_name
+    plot_name = args.plot_name
     diff_models = args.diff_models
     model_names = args.model_names
     single_plot = args.single_plot
     if diff_models:
-        plot_diff_models(model_names, columns=columns, save=save, show=show, save_dir=save_dir, xkcd=xkcd, single_plot=single_plot, time_columns=time_columns)
+        plot_diff_models(model_names, columns=columns, save=save, show=show,
+                        save_dir=save_dir, xkcd=xkcd, single_plot=single_plot,
+                        time_columns=time_columns, save_name=save_name, plot_name=plot_name)
     elif not diff_models:
-        plot(model_names, columns=columns, save=save, show=show, save_dir=save_dir, xkcd=xkcd, single_plot=single_plot)
+        plot(model_names, columns=columns, save=save, show=show, save_dir=save_dir,
+            xkcd=xkcd, single_plot=single_plot, save_name=save_name, plot_name=plot_name)
 
-def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./plotting/", xkcd=False, single_plot=False):
+def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./plotting/",
+        xkcd=False, single_plot=False, save_name=None, plot_name=None):
     ys = {}
     xs = {}
     cols = []
@@ -113,9 +124,16 @@ def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./p
             plt.legend(loc='best')
             plt.ylabel(col)
             plt.xlabel("Training Iterations")
-            plt.title(str(model_names) + ": " + col + " vs. Training Iterations")
+            if plot_name:
+                plt.title(plot_name)
+            else:
+                title = str(model_names) + ": " + col + " vs. Training Iterations"
+                plt.title(title)
             if save:
-                file_name = model_name + "_" + str(column)
+                if save_name:
+                    file_name = save_name
+                else:
+                    file_name = model_name + "_" + str(column)
                 directory = save_dir + model_name + "/plots/"
                 if not os.path.exists(directory):
                     os.makedirs(directory)
@@ -130,10 +148,17 @@ def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./p
                 y = ys[(model_name, col)]
                 plt.ylabel(col)
                 plt.xlabel("Training Iterations")
-                plt.title(model_name + ": " + col + " vs. Training Iterations")
+                if plot_name:
+                    plt.title(plot_name)
+                else:
+                    title = model_name + ": " + col + " vs. Training Iterations"
+                    plt.title(title)
                 plt.plot(X, y)
                 if save:
-                    file_name = model_name + "_" + str(column)
+                    if save_name:
+                        file_name = save_name
+                    else:
+                        file_name = model_name + "_" + str(column)
                     directory = save_dir + model_name + "/plots/"
                     if not os.path.exists(directory):
                         os.makedirs(directory)
@@ -141,7 +166,8 @@ def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./p
                 if show:
                     plt.show()
 
-def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir = "./plotting/", xkcd=False, single_plot=False, time_columns=[-1]):
+def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir = "./plotting/",
+                    xkcd=False, single_plot=False, time_columns=[-1], save_name=None, plot_name=None):
     ys = {}
     xs = {}
     col_names = set()
@@ -183,9 +209,15 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
             title += model_name + "_"
         title += list(col_names)[0]
         title += "_vs_TrainingIterations"
-        plt.title(title)
+        if plot_name:
+            plt.title(plot_name)
+        else:
+            plt.title(title)
         if save:
-            file_name = title
+            if save_name:
+                file_name = save_name
+            else:
+                file_name = title
             for model_name in model_names:
                 directory = save_dir + model_name + "/plots/"
                 if not os.path.exists(directory):
@@ -202,10 +234,16 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
                 plt.ylabel("Column " + col_name)
                 plt.xlabel("Training Iterations")
                 title = model_name + "_" + col_name + "_vs_TrainingIterations"
-                plt.title(title)
+                if plot_name:
+                    plt.title(plot_name)
+                else:
+                    plt.title(title)
                 plt.plot(X, y)
                 if save:
-                    file_name = title
+                    if save_name:
+                        file_name = save_name
+                    else:
+                        file_name = title
                     directory = save_dir + model_name + "/plots/"
                     if not os.path.exists(directory):
                         os.makedirs(directory)
