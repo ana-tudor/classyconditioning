@@ -44,6 +44,6 @@ def visualize_model(env, model, timesteps = None, render = False, save_path = No
         t += 1
         
     if save_path:
-        imageio.mimsave(save_path, img_arr, duration = 1 / fps)
+        imageio.mimsave(save_path, img_arr, duration = render_every / fps)
     
     
