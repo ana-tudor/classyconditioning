@@ -41,7 +41,7 @@ use_vf_clipping = True
 rew_scale = 1
 rew_baseline = False
 conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
-conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[64, 64], emb_size=256),
+conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
 
