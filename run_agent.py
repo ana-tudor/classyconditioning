@@ -1,7 +1,9 @@
 import tensorflow.compat.v1 as tf
 # from baselines.ppo2 import ppo2
 from fruitbot_ppo import ppo_agent
-from fruitbot_ppo import build_impala_cnn
+from fruitbot_ppo.reg_impala_cnn import build_reg_impala_cnn
+
+build_impala_cnn = build_reg_impala_cnn
 
 # Default CNN
 # from baselines.common.models import build_impala_cnn

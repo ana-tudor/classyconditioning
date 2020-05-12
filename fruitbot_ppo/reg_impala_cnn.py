@@ -1,3 +1,8 @@
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
+
+
 def build_reg_impala_cnn(unscaled_images, depths=[16,32,32], **conv_kwargs):
     """
     Model used in the paper "IMPALA: Scalable Distributed Deep-RL with
@@ -31,8 +36,8 @@ def build_reg_impala_cnn(unscaled_images, depths=[16,32,32], **conv_kwargs):
         out = tf.layers.max_pooling2d(out, pool_size=3, strides=2, padding='same')
         out = residual_block(out)
         # Dropout or Batchnorm here?
-        out = tf.layers.BatchNormalization(out)
-        out = tf.layers.Dropout(out)
+        out = tf.layers.batch_normalization(out)
+        out = tf.layers.dropout(out, rate = .5)
         out = residual_block(out)
         return out
 
