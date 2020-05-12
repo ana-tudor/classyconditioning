@@ -11,7 +11,9 @@ python -m run_agent --test_mode True --num_levels 500 --start_level 50 --timeste
 Test visualization with best benchmark model:
 *coming soon!*
 
-run_agent.py specifications
+
+
+run_agent.py specifications:
 
 usage: run_agent.py [-h] [--env_name ENV_NAME]
                     [--distribution_mode {easy,hard,exploration,memory,extreme}]
