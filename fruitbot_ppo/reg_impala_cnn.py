@@ -21,7 +21,7 @@ def build_reg_impala_cnn(unscaled_images, depths=[16,32,32], **conv_kwargs):
         out = tf.nn.leaky_relu(inputs)
 
         out = conv_layer(out, depth)
-        # out = tf.nn.batch_normalization(out, )
+        # Potential dropout here
         out = tf.nn.leaky_relu(out)
         out = conv_layer(out, depth)
         return out + inputs
@@ -30,6 +30,9 @@ def build_reg_impala_cnn(unscaled_images, depths=[16,32,32], **conv_kwargs):
         out = conv_layer(inputs, depth)
         out = tf.layers.max_pooling2d(out, pool_size=3, strides=2, padding='same')
         out = residual_block(out)
+        # Dropout or Batchnorm here?
+        out = tf.layers.BatchNormalization(out)
+        out = tf.layers.Dropout(out)
         out = residual_block(out)
         return out
 

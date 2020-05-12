@@ -1,8 +1,10 @@
 import tensorflow.compat.v1 as tf
 # from baselines.ppo2 import ppo2
 from fruitbot_ppo import ppo_agent
+from fruitbot_ppo import build_impala_cnn
 
-from baselines.common.models import build_impala_cnn
+# Default CNN
+# from baselines.common.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
