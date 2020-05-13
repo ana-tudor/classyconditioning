@@ -77,38 +77,7 @@ def visualize_model(env, model, timesteps = None, render = False, save_path = No
     
 
 
-'''
-Global variables defaults, values can be changed via parser
-All variables of interest which are desired to be tuned must be listed here
-'''
 
-#Hyperparameters
-
-learning_rate = 5e-4
-ent_coef = .01
-gamma = .999
-lam = .95
-nsteps = 256
-nminibatches = 8
-ppo_epochs = 3
-clip_range = .2
-use_vf_clipping = True
-update_fn=None,
-init_fn=None,
-vf_coef=0.5,
-max_grad_norm=0.5
-comm = None
-
-
-#Important variables of interest
-rew_scale = 1
-rew_baseline = False
-conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
-conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
-                lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
-                lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
-
-seeds = [1543, 90023]
 
 
 
@@ -162,6 +131,43 @@ def main():
     venv = VecMonitor(venv=venv, filename=None, keep_buf=100)
 
     venv = VecNormalize(venv=venv, ob=False)
+    
+    
+    
+    
+    #==============================LOAD_MODEL====================================
+    '''
+    Global variables defaults, values can be changed via parser
+    All variables of interest which are desired to be tuned must be listed here
+    '''
+
+    #Hyperparameters
+
+    learning_rate = 5e-4
+    ent_coef = .01
+    gamma = .999
+    lam = .95
+    nsteps = 256
+    nminibatches = 8
+    ppo_epochs = 3
+    clip_range = .2
+    use_vf_clipping = True
+    update_fn=None,
+    init_fn=None,
+    vf_coef=0.5,
+    max_grad_norm=0.5
+    comm = None
+
+
+    #Important variables of interest
+    rew_scale = 1
+    rew_baseline = False
+    conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+    conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
+                lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
+                lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
+
+    seeds = [1543, 90023]
 
     conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     
@@ -189,6 +195,10 @@ def main():
                     max_grad_norm=max_grad_norm, comm=comm, mpi_rank_weight=0)
 
     model.load(args.load_path)
+    
+    #==============================================================================
+    
+    
     
     visualize_model(venv, model, render = args.render, save_path = args.save_path, render_every = args.compress, 
                     timesteps = args.timesteps, fps = args.fps)
