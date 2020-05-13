@@ -4,9 +4,9 @@ from fruitbot_ppo import ppo_agent
 from fruitbot_ppo.reg_impala_cnn import build_reg_impala_cnn
 
 # Default CNN
-from baselines.common.models import build_impala_cnn
+#from baselines.common.models import build_impala_cnn
 
-# build_impala_cnn = build_reg_impala_cnn
+build_impala_cnn = build_reg_impala_cnn
 
 
 from baselines.common.mpi_util import setup_mpi_gpus
@@ -32,6 +32,7 @@ All variables of interest which are desired to be tuned must be listed here
 '''
 
 #Hyperparameters
+num_envs = 64
 learning_rate = 5e-4
 ent_coef = .01
 gamma = .999
@@ -45,7 +46,7 @@ use_vf_clipping = True
 #Important variables of interest
 rew_scale = 1
 rew_baseline = False
-conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,64], emb_size=256)
+conv_fn = lambda x: build_impala_cnn(x, depths=[16,64,64], emb_size=256)
 conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
@@ -119,9 +120,12 @@ def main():
 
 
 def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=False):
-    num_envs = args.num_envs
+    #num_envs = args.num_envs
     if (voi is not None) and (valoi is not None):
-        globals()[voi] = valoi
+        if isinstance(globals()[voi], int ):
+            globals()[voi] = int(valoi)
+        else:
+            globals()[voi] = valoi
 
     timesteps_per_proc = args.timesteps_total
     save_interval = args.save_interval
@@ -144,6 +148,7 @@ def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=
     format_strs = ['csv', 'stdout'] #if log_comm.Get_rank() == 0 else []
     logger.configure(dir=run_dir, format_strs=format_strs)
 
+    print("num_envs" + str(num_envs))
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs,
                       env_name=args.env_name,
