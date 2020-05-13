@@ -122,9 +122,11 @@ def learn(*, network, env, total_timesteps, test_mode = False, eval_env = None, 
         if update % log_interval == 0 and is_mpi_root: logger.info('Stepping environment...')
 
         # Get minibatch
-        obs, returns, masks, actions, values, neglogpacs, states, epinfos = runner.run() #pylint: disable=E0632
-
-        if update >= epopt_update and (epopt_timestep > 0):
+        if (epopt_timestep == 0) \
+                or ((update < epopt_update) and (epopt_timestep >0))\
+                or ((update >= epopt_update) and (epopt_timestep >0) and (update%5==0)):
+            obs, returns, masks, actions, values, neglogpacs, states, epinfos = runner.run() #pylint: disable=E0632
+        else:
             obs, returns, masks, actions, values, neglogpacs, states, epinfos = epoptrunner.run(paths = paths)
 
         if eval_env is not None:
