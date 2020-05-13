@@ -47,6 +47,9 @@ def main():
     parser.add_argument('--time_columns', nargs='*')
     parser.add_argument('--save_name', type=str, default=None)
     parser.add_argument('--plot_name', type=str, nargs='*', default=None)
+    parser.add_argument('--average_tests', type=bool, default=False)
+    parser.add_argument('--avg_x_vals', type=float, nargs='*', default=None)
+
 
     args = parser.parse_args()
     columns = args.columns if args.columns else ['reward'] # default reward
@@ -70,10 +73,18 @@ def main():
     diff_models = args.diff_models
     model_names = args.model_names
     single_plot = args.single_plot
+    average_tests = args.average_tests
+    avg_x_vals = args.avg_x_vals
+
+
+    if average_tests and (avg_x_vals is None):
+        raise Exception("Please pass in x values for your averaged models")
+
     if diff_models:
         plot_diff_models(model_names, columns=columns, save=save, show=show,
                         save_dir=save_dir, xkcd=xkcd, single_plot=single_plot,
-                        time_columns=time_columns, save_name=save_name, plot_name=plot_name)
+                        time_columns=time_columns, save_name=save_name, plot_name=plot_name,
+                        average_tests=average_tests, average_x_vals=avg_x_vals)
     elif not diff_models:
         plot(model_names, columns=columns, save=save, show=show, save_dir=save_dir,
             xkcd=xkcd, single_plot=single_plot, save_name=save_name, plot_name=plot_name)
@@ -171,7 +182,8 @@ def plot(model_names, columns=['reward'], save=False, show=True, save_dir = "./p
                     plt.show()
 
 def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir = "./plotting/",
-                    xkcd=False, single_plot=False, time_columns=[-1], save_name=None, plot_name=None):
+                    xkcd=False, single_plot=False, time_columns=[-1], save_name=None, plot_name=None,
+                    average_tests=False, average_x_vals=None):
     ys = {}
     xs = {}
     col_names = set()
@@ -200,10 +212,17 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
         col_names.add(dataset.columns.values[col])
 
     if single_plot:
-        for model_name in model_names:
-            y = ys[model_name]
-            x = xs[model_name]
+        if average_tests:
+            y = []
+            for model_name in model_names:
+                y.append(np.mean(ys[model_name]))
+            x = average_x_vals
             plt.plot(x, y, label=model_name)
+        else:
+            for model_name in model_names:
+                y = ys[model_name]
+                x = xs[model_name]
+                plt.plot(x, y, label=model_name)
 
         plt.legend(loc='best')
         plt.ylabel("Columns " + str(col_names))
@@ -242,6 +261,9 @@ def plot_diff_models(model_names, columns=[0], save=False, show=True, save_dir =
                 plt.xlabel("Training Iterations")
                 title = model_name + "_" + col_name + "_vs_TrainingIterations"
                 if plot_name:
+                    if len(plot_name) > 1 and not isinstance(plot_name,str):
+                        print("run")
+                        plot_name = ' '.join(plot_name)
                     plt.title(plot_name)
                 else:
                     plt.title(title)
