@@ -32,8 +32,8 @@ All variables of interest which are desired to be tuned must be listed here
 '''
 
 #Hyperparameters
-num_envs = 64
-learning_rate = 5e-4
+num_envs = 32
+learning_rate = 1e-3
 ent_coef = .01
 gamma = .999
 lam = .95
@@ -85,7 +85,7 @@ def main():
         help='A global variable name of interest for hyperparameter searching')
     parser.add_argument('--values_oi', type=float, nargs='+', default=None,
         help='Values of interest for hyperparameter searching')
-    parser.add_argument('--num_envs', type=int, default=64,
+    parser.add_argument('--num_envs', type=int, default=32,
         help='The number of environments across which the agent should be run in parallel')
     parser.add_argument('--epopt_timestep', type=int, default=0,
         help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
