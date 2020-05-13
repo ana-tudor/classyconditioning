@@ -32,8 +32,8 @@ All variables of interest which are desired to be tuned must be listed here
 '''
 
 #Hyperparameters
-num_envs = 64
-learning_rate = 5e-4
+num_envs = 32
+learning_rate = 1e-3
 ent_coef = .01
 gamma = .999
 lam = .95
@@ -85,11 +85,11 @@ def main():
         help='A global variable name of interest for hyperparameter searching')
     parser.add_argument('--values_oi', type=float, nargs='+', default=None,
         help='Values of interest for hyperparameter searching')
-    parser.add_argument('--num_envs', type=int, default=64,
+    parser.add_argument('--num_envs', type=int, default=32,
         help='The number of environments across which the agent should be run in parallel')
     parser.add_argument('--epopt_timestep', type=int, default=0,
         help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
-    parser.add_argument('--paths', type=int, default=10,
+    parser.add_argument('--paths', type=int, default=5,
         help='The number of trajectories to explore in EPO-pt')
 
     args = parser.parse_args()
@@ -100,7 +100,7 @@ def main():
                             globals().keys())
 
     if ((args.values_oi is None) and (args.variable_oi is None)):
-        learn_helper(args)
+        learn_helper(args, seed = seeds)
         return
     elif ((args.values_oi is None) and (args.variable_oi is not None)):
         if args.variable_oi == 'conv_fn':
