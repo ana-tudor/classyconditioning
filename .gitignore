@@ -7,3 +7,5 @@ train_procgen/models
 *.ipynb_checkpoints
 baselines/
 dist/
+fruitbot_ppo/images/*.gif
+

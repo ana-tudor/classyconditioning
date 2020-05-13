@@ -3,10 +3,12 @@ import tensorflow.compat.v1 as tf
 from fruitbot_ppo import ppo_agent
 from fruitbot_ppo.reg_impala_cnn import build_reg_impala_cnn
 
+# Default CNN
+#from baselines.common.models import build_impala_cnn
+
 build_impala_cnn = build_reg_impala_cnn
 
-# Default CNN
-# from baselines.common.models import build_impala_cnn
+
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
@@ -30,8 +32,8 @@ All variables of interest which are desired to be tuned must be listed here
 '''
 
 #Hyperparameters
-num_envs = 64
-learning_rate = 5e-4
+num_envs = 32
+learning_rate = 1e-3
 ent_coef = .01
 gamma = .999
 lam = .95
@@ -44,12 +46,12 @@ use_vf_clipping = True
 #Important variables of interest
 rew_scale = 1
 rew_baseline = False
-conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+conv_fn = lambda x: build_impala_cnn(x, depths=[16,64,64], emb_size=256)
 conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
 
-seeds = [1543, 90023]
+seeds = 1543
 
 
 def main():
@@ -83,11 +85,11 @@ def main():
         help='A global variable name of interest for hyperparameter searching')
     parser.add_argument('--values_oi', type=float, nargs='+', default=None,
         help='Values of interest for hyperparameter searching')
-    parser.add_argument('--num_envs', type=int, default=num_envs,
+    parser.add_argument('--num_envs', type=int, default=32,
         help='The number of environments across which the agent should be run in parallel')
     parser.add_argument('--epopt_timestep', type=int, default=0,
         help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
-    parser.add_argument('--paths', type=int, default=10,
+    parser.add_argument('--paths', type=int, default=5,
         help='The number of trajectories to explore in EPO-pt')
 
     args = parser.parse_args()
@@ -98,7 +100,7 @@ def main():
                             globals().keys())
 
     if ((args.values_oi is None) and (args.variable_oi is None)):
-        learn_helper(args)
+        learn_helper(args, seed = seeds)
         return
     elif ((args.values_oi is None) and (args.variable_oi is not None)):
         if args.variable_oi == 'conv_fn':
@@ -111,21 +113,22 @@ def main():
         valois = args.values_oi
 
     for valoi in valois:
-        for seed in seeds:
-            # with tf.get_default_graph().as_default():
-            learn_helper(args, args.variable_oi, valoi,
-                     run_dir=args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi)+"_"+str(seed),
-                     seed=seed, save_once=True)
+        # with tf.get_default_graph().as_default():
+        learn_helper(args, args.variable_oi, valoi,
+            run_dir=args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi),
+            seed=seeds, save_once=True)
 
 
 def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=False):
-
+    #num_envs = args.num_envs
     if (voi is not None) and (valoi is not None):
-        globals()[voi] = valoi
+        if isinstance(globals()[voi], int ):
+            globals()[voi] = int(valoi)
+        else:
+            globals()[voi] = valoi
 
     timesteps_per_proc = args.timesteps_total
     save_interval = args.save_interval
-    num_envs = args.num_envs
     epopt_timestep = args.epopt_timestep
     paths = args.paths
     if save_once:
@@ -145,6 +148,7 @@ def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=
     format_strs = ['csv', 'stdout'] #if log_comm.Get_rank() == 0 else []
     logger.configure(dir=run_dir, format_strs=format_strs)
 
+    print("num_envs" + str(num_envs))
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs,
                       env_name=args.env_name,
