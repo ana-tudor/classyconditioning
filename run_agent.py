@@ -32,7 +32,6 @@ All variables of interest which are desired to be tuned must be listed here
 '''
 
 #Hyperparameters
-num_envs = 64
 learning_rate = 5e-4
 ent_coef = .01
 gamma = .999
@@ -46,12 +45,12 @@ use_vf_clipping = True
 #Important variables of interest
 rew_scale = 1
 rew_baseline = False
-conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,64], emb_size=256)
 conv_fn_vals = [lambda x: build_impala_cnn(x, depths=[16, 32, 64], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[32, 32], emb_size=256),
                 lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)]
 
-seeds = [1543, 90023]
+seeds = 1543
 
 
 def main():
@@ -85,7 +84,7 @@ def main():
         help='A global variable name of interest for hyperparameter searching')
     parser.add_argument('--values_oi', type=float, nargs='+', default=None,
         help='Values of interest for hyperparameter searching')
-    parser.add_argument('--num_envs', type=int, default=num_envs,
+    parser.add_argument('--num_envs', type=int, default=64,
         help='The number of environments across which the agent should be run in parallel')
     parser.add_argument('--epopt_timestep', type=int, default=0,
         help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
@@ -113,21 +112,19 @@ def main():
         valois = args.values_oi
 
     for valoi in valois:
-        for seed in seeds:
-            # with tf.get_default_graph().as_default():
-            learn_helper(args, args.variable_oi, valoi,
-                     run_dir=args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi)+"_"+str(seed),
-                     seed=seed, save_once=True)
+        # with tf.get_default_graph().as_default():
+        learn_helper(args, args.variable_oi, valoi,
+            run_dir=args.run_dir+"_"+str(args.variable_oi)+"_"+str(valoi),
+            seed=seeds, save_once=True)
 
 
 def learn_helper(args, voi=None, valoi=None, run_dir=None, seed=None, save_once=False):
-
+    num_envs = args.num_envs
     if (voi is not None) and (valoi is not None):
         globals()[voi] = valoi
 
     timesteps_per_proc = args.timesteps_total
     save_interval = args.save_interval
-    num_envs = args.num_envs
     epopt_timestep = args.epopt_timestep
     paths = args.paths
     if save_once:
