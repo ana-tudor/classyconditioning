@@ -4,20 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# Function is callable from command line or from another file
-# Model_names is the only required command line argument. List as many models as you want
-# show dictates if we want to show the figure (we might want to save-only) (Default True)
-# save dictates if we want to save the figure (we might want to show-only) (Default False)
-# xkcd toggles xkcd mode because why not (default False)
-# save_dir is the directory to save to (overwrite to make save be True)
-# Columns is which columns of csv to display. Can be strings, or "mean" or "reward" or indices.
-# single_plot decides whether to put all plots on one graph or not. I did some weird things with padding. Default False
-# For example you can compare the means across two different models, but if the training times don't line up it gets weird.
-# Example calls
-# python plot.py --model_names This_Model_1 This_Model_2 --columns reward mean --single_plot True --xkcd True
-# python plot.py --model_names This_Model_1 This_Model_2 --columns reward mean --single_plot True --save True --show False
-# python plot.py --model_names This_Model_1 This_Model_2 --columns 1 0 --single_plot True --save True --show False
-# python plot.py --model_names This_Model_1 --columns 1 --save True --show False
+
+# Function averages log files of different models
+# python average_logs.py --model_names model_1 model_2
+# --across_time average across time (Default False)
+# --save_name the directory and name of the new csv
+# Example: python average_logs.py --model_names 50_epopt_ckpt05 50_epopt_ckpt10 --save_name 50_epopt_avg_ckpts --across_time True
 
 def main():
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
@@ -38,8 +30,6 @@ def main():
         merge_logs(model_names[0], model_names[1],save_dir)
     else:
         merge_logs_across_time(model_names, save_dir)
-
-
 
 def merge_logs(model1, model2, save_dir):
     data1 = pd.read_csv("models/" + model1 + "/progress.csv")
@@ -76,9 +66,6 @@ def merge_logs_across_time(model_names, save_dir):
         df.to_csv("models/" + save_dir + "/progress.csv")
     else:
         raise Exception("Could not save, please provide save directory")
-
-
-
 
 if __name__ == '__main__':
     main()

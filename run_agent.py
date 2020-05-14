@@ -33,7 +33,7 @@ All variables of interest which are desired to be tuned must be listed here
 
 #Hyperparameters
 num_envs = 32
-learning_rate = 1e-3
+learning_rate = 5e-4
 ent_coef = .01
 gamma = .999
 lam = .95
