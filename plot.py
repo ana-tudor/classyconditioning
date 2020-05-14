@@ -5,34 +5,36 @@ import matplotlib.pyplot as plt
 import os
 import types
 
-# Function is callable from command line or from another file
-# Model_names is the only required command line argument. List as many models as you want
-# show dictates if we want to show the figure (we might want to save-only) (Default True)
-# save dictates if we want to save the figure (we might want to show-only) (Default False)
-# xkcd toggles xkcd mode because why not (default False)
-# save_dir is the directory to save to (overwrite to make save be True)
-# Columns is which columns of csv to display. Can be strings, or "mean" or "reward" or indices.
-# single_plot decides whether to put all plots on one graph or not. I did some weird things with padding. Default False
-# For example you can compare the means across two different models, but if the training times don't line up it gets weird.
-# Example calls
-# python plot.py --model_names This_Model_1 This_Model_2 --columns reward mean --single_plot True --xkcd True
-# python plot.py --model_names This_Model_1 This_Model_2 --columns reward mean --single_plot True --save True --show False
-# python plot.py --model_names This_Model_1 This_Model_2 --columns 1 0 --single_plot True --save True --show False
-# python plot.py --model_names This_Model_1 --columns 1 --save True --show False
+# This function is used to plot training and testing checkpoints from csvs
+# This has two modes. Plotting the same model, and plotting different models. Each has its own command line arguments associated.
+# Model_names is the only required argument
+# python plot.py --model_names Model_1 # by default --diff_models False
+# --model_names This can be several model names that will be plotted
+# --save This chooses whether to save the plots (Default False)
+# --show This chooses whether to show the plots (Default True)
+# --save_dir the directory to save to
+# --xkcd Plot in xkcd style
+# --single_plot This chooses whether to plot all models on same plot or individually
+# --columns This is columns of interest from the csv. Plots vs. Time by default for PPO
+# --save_name The name for EVERY Plot generated this run. Suggested to only make one plot at a time
+# --plot_name The title for EVERY Plot generated this run. Suggested to only make one plot at a time
+# Example: python plot.py --model_names This_Model_1 This_Model_2 --columns 1 0 --single_plot True --save True --show False
 
-# Okay, the API is different now when plotting DIFFERENT models on the same plot. This is due to weird csv stuff that I didn't resolve neatly
-# All previous functionality is maintained.
-# When diff_models = True, the following has changed:
-# You can only plot one column at a time (single plot T/F still works though)
-# The --columns parameter now gives the y-axis column index for the respective model. For example model1 has reward in column2, model2 has reward in column3, use --columns 2 3
-# The --time_columns parameter is the same idea for the time column x-axis. You can use -1, -2, etc. here if easier.
+# python plot.py --model_names Model_1 --diff_models True
+# --model_names This can be several model names that will be plotted
+# --save This chooses whether to save the plots (Default False)
+# --save_dir the directory to save to
+# --show This chooses whether to show the plots (Default True)
+# --xkcd Plot in xkcd style
+# --single_plot This chooses whether to plot all models on same plot or individually
+# --columns list of y-axis column index for each model. For example model1 has reward in column2, model2 has reward in column3, use --columns 2 3
+# --time_columns list of x-axis(time) column index for each model
+# --save_name The name for EVERY Plot generated this run. Suggested to only make one plot at a time
+# --plot_name The title for EVERY Plot generated this run. Suggested to only make one plot at a time
 # Example: Plot episode_length_mean for three models in single plot and save to each model folder. Respective column indices listed
 # python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 13 0 0 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
 # Example: Plot episode_reward_mean for three models in single plot and save to each model folder. Respective column indices listed
 # python plot.py --model_names acer_explore1 a2c_test PPO2_initial_test --columns 14 1 1 --time_columns -1 -2 -1 --single_plot True --diff_models True --save True
-
-# new parameters. Save_name and plot_name. WARNING: These will be the name for EVERY file/plot generated for this run. Will overwrite. Only use for one plot at a time.
-# If save_name or plot_name is not None, it will become the file_name or title for every plot in the run.
 
 def main():
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
