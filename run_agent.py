@@ -88,9 +88,9 @@ def main():
     parser.add_argument('--num_envs', type=int, default=32,
         help='The number of environments across which the agent should be run in parallel')
     parser.add_argument('--epopt_timestep', type=int, default=0,
-        help='The number of timesteps to burn-in the model before it begins implementing EPO-pt')
+        help='The number of timesteps to burn-in the model before it begins implementing EPOpt')
     parser.add_argument('--paths', type=int, default=5,
-        help='The number of trajectories to explore in EPO-pt')
+        help='The number of trajectories to explore in EPOpt')
 
     args = parser.parse_args()
 
